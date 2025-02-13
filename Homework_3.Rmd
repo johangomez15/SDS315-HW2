@@ -128,7 +128,7 @@ sclass1 <- sclass %>%
 
 sclass2 <- do(10000)*mean(resample(sclass1$mileage))
 
-ggplot(sclass2, aes(x= mean))+ geom_histogram(binwidth = 0.005) 
+ggplot(sclass2, aes(x= mean))+ geom_histogram(binwidth = 500) 
 kable(confint(sclass2, level = 0.95))
 
 ```
