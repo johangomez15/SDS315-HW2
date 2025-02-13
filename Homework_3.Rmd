@@ -1,0 +1,245 @@
+---
+title: "Homework 3"
+author: "Johan Gomez"
+date: "2025-02-11"
+output: html_document
+---
+
+## **GitHub link:** 
+## **EID: jyg433**
+
+```{r, include=FALSE}
+suppressPackageStartupMessages(library(tidyverse))
+
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+
+```
+
+```{r, echo=FALSE, warning=FALSE}
+library(ggplot2)
+library(dplyr)
+library(mosaic)
+library(knitr)
+
+
+```
+
+# **Question 1: Gas Prices**
+
+```{r, echo=FALSE, warning=FALSE}
+gas <- read.csv("gasprices.csv")
+
+```
+
+## **Part A**
+
+```{r, echo=FALSE}
+comp <- do(10000)*diffmean(Price ~ Competitors, data = resample(gas))
+
+ggplot( comp, aes(x= diffmean))+ geom_histogram(binwidth = 0.005) + labs(title = str_wrap("Bootstrap sampling distribution for difference in gas prices if there is no competition"))
+kable(confint(comp, level = 0.95))
+```
+Claim: Gas stations will charge more if there is no competition directly in sight. 
+
+Evidence: The 95% confidence interval for the price difference between gas stations with and without competition ranges from -0.055 to 0.0076. the interval contains zero which could mean there is neither a decrease or an increase, which means there is not a trend.
+
+Conclusion: Since the confidence interval includes zero, there is insufficient evidence to conclude that lack of competition leads to higher gas prices. We can reject this theory. 
+
+
+
+## **Part B**
+
+```{r, echo=FALSE}
+rich_area <- do(10000)*cor(Price ~ Income, data = resample(gas))
+
+ggplot( rich_area, aes(x= cor))+ geom_histogram(binwidth = 0.005) + labs(title = str_wrap("Bootstrap sampling distribution of correlation in gas prices depending on income"))
+kable(confint(rich_area, level = 0.95))
+```
+
+Claim: Higher income will lead to higher gas prices.  
+
+Evidence:The 95% confidence interval for correlation between income and gas prices ranges from 0.1945 to 0.5653. This interval does not contain zero in it. 
+
+Conclusion: Since our interval does not contain zero and is in the positives, we can assume that richer locations will have a higher gas price. 
+
+## **Part C**
+
+```{r, echo=FALSE}
+stoplight <- do(10000)*diffmean(Price ~ Stoplight, data = resample(gas))
+
+ggplot( stoplight, aes(x= diffmean))+ geom_histogram(binwidth = 0.005) + labs(title = str_wrap("Bootstrap sampling distribution for difference in gas prices if there is a stoplight"))
+kable(confint(stoplight, level = 0.95))
+```
+
+Claim: Gast stations at stoplights will have higher gas prices. 
+
+Evidence: The 95% confidence interval for difference in price between gas stations at stoplights and those not at gaslights ranges from -0.039 to 0.030. Our interval does contain zero which can lead us to believe that there is not a trend.
+
+Conclusion: Since our interval does contain zero, we can assume that gas prices will not go up if they are at a stoplight. We can reject our theory. 
+
+
+## **Part D**
+
+```{r, echo=FALSE}
+highway1 <- do(10000)*diffmean(Price ~ Highway, data = resample(gas))
+
+ggplot( highway1, aes(x= diffmean))+ geom_histogram(binwidth = 0.005) + labs(title = str_wrap("Bootstrap sampling distribution for difference in gas prices depending on access to the highway"))
+kable(confint(highway1, level = 0.95))
+```
+
+Claim: Gas stations will direct access to highways will have higher gas prices. 
+
+Evidence: The 95% confidence interval for difference in price between gas stations with access to highways and gas stations without access to highways ranges from 0.0086 to 0.0818. Our interval does not contain zero, however it is a very small positive increase.
+
+Conclusion: Since our interval does not contain zero, we can infer that gas stations with access to highways will have higher gas prices but it is a very small increase in price that would not be very significant. 
+
+
+## **Part E**
+
+```{r, echo=FALSE}
+gas$brand_name <- ifelse(gas$Brand == "Shell", "Shell",  "not_shell")
+shell1 <- do(10000)*diffmean(Price ~ brand_name, data = resample(gas))
+
+ggplot( shell1, aes(x= diffmean))+ geom_histogram(binwidth = 0.005) + labs(title = str_wrap("Bootstrap sampling distribution for difference in gas prices whether or not the brand is Shell"))
+kable(confint(shell1, level = 0.95))
+```
+
+Claim: Shell has higher gas prices than other brands. 
+
+Evidence: The 95% confidence interval for difference in price between shell gas prices and other brand gas prices ranges from -0.01 to 0.07. Our interval contains zero, which means that there could not be any difference therefore is no trend in prices. 
+
+Conclusion: Since our interval contains zero, we can not support our theory that shell has higher gas prices than other brands. Our theory is rejected. 
+
+
+# **Question 2: S-Class**
+
+```{r, echo=FALSE}
+sclass <- read.csv("sclass.csv")
+```
+
+## **Part A**
+
+```{r, echo=FALSE}
+sclass1 <- sclass %>%
+  filter(year == 2011, trim == '63 AMG')
+
+sclass2 <- do(10000)*mean(resample(sclass1$mileage))
+
+ggplot(sclass2, aes(x= mean))+ geom_histogram(binwidth = 0.005) 
+kable(confint(sclass2, level = 0.95))
+
+```
+
+
+## **Part B**
+
+```{r, echo=FALSE}
+sclass$isBlack <- ifelse(sclass$color == "Black", TRUE,  FALSE)
+
+sclass_3 <- sclass %>%
+  filter(year == 2014, trim == "550")
+
+sclass_4 <- do(10000)*prop(resample(sclass_3$isBlack))
+
+ggplot(sclass_4, aes(x= prop_TRUE))+ geom_histogram(binwidth = 0.005)
+kable(confint(sclass_4, level = 0.95))
+
+```
+
+
+# **Question 3: NBC**
+
+```{r, echo=FALSE, warning=FALSE}
+nbc <- read.csv("nbc_pilotsurvey.csv")
+
+```
+
+## **Part A**
+```{r, echo=FALSE}
+nbc_1 <- nbc %>%
+  filter(Show == "Living with Ed" | Show == "My Name is Earl")
+
+nbc_2 = do(10000)*diffmean(Q1_Happy~Show, data = resample(nbc_1))
+
+ggplot( nbc_2, aes(x= diffmean))+ geom_histogram(binwidth = 0.005) + labs(title = str_wrap("Bootstrap sampling distribution for difference between happiness level response of the shows: Living With Ed and My Name is Earl"))
+kable(confint(nbc_2, level = 0.95))
+
+```
+
+Question: Is there evidence that one show consistently produces a higher happy response among viewers?
+
+Approach: We filter the dataset to only include responses about our shows of interest, "Living With Ed" and "My Name is Earl". Afterwards, we bootstrap the difference of the responses of the two shows. 
+
+Results: The 95% confidence interval for difference in happy response of the two shows ranges from -0.40 to 0.10. Our interval does contain zero. 
+
+Conclusion: Since our interval does contain zero, we can not be certain that one show has a higher happy response than the other. 
+
+
+## **Part B**
+```{r, echo=FALSE}
+nbc_3 <- nbc %>%
+  filter(Show == "The Biggest Loser" | Show == "The Apprentice: Los Angeles")
+
+nbc_4 = do(10000)*diffmean(Q1_Annoyed~Show, data = resample(nbc_3))
+
+ggplot( nbc_4, aes(x= diffmean))+ geom_histogram(binwidth =  0.005) + labs(title = str_wrap("Bootstrap sampling distribution for difference between level of annoyedness of the shows: The Biggest Loser and The Apprentice: Los Angeles"))
+kable(confint(nbc_4, level = 0.95))
+```
+
+Question: Is there evidence that one show consistently produces a higher annoyed response among
+viewers?
+
+Approach: First, we filter the dataset to only contain the shows we want. Secondly, we bootstrap the differences between the annoyed rating responses. 
+
+Results: The 95% confidence interval for difference in annoyed response of the two shows ranges from -0.52 to -0.02. Our interval does not contain zero.
+
+Conclusion: Since our interval does not contain zero, we can infer that one show did have a higher annoyed response among viewers. Our data supports that claim. 
+
+## **Part C**
+```{r, echo=FALSE}
+nbc_5 <- nbc %>%
+  filter(Show == "Dancing with the Stars")
+nbc_5$Confusing <- ifelse(nbc_5$Q2_Confusing >3, TRUE, FALSE)
+nbc_6 = do(10000)*prop(resample(nbc_5$Confusing))
+
+ggplot( nbc_6, aes(x= prop_TRUE))+ geom_histogram(binwidth = 0.0059) + labs(title = str_wrap("Bootstrap sampling distribution for Proportion of Viewers Finding Dancing with the Stars Confusing"))
+kable(confint(nbc_6, level = 0.95))
+```
+
+Question: What proportion of American TV watchers would we expect to give a response of 4 or greater to the “confusing” question? 
+
+Approach: We filter the dataset to only contain the responses that we are looking for, then we bootstrap the data of people who thought it was confusing by the total amount. 
+
+Results: The 95% confidence interval for difference in confused response of the show ranges from 0.04 to 0.12. Our interval does contain zero.
+
+Conclusion: Since our interval does not contain zero, we can infer that the show did not confuse the viewer. Our data supports the claim that viewers would not be confused. 
+
+# **Question 4: Ebay**
+
+```{r, echo=FALSE, warning=FALSE}
+ebay <- read.csv("ebay.csv")
+
+```
+
+## **Part A**
+```{r, echo=FALSE}
+ebay$ratio <- (ebay$rev_after/ebay$rev_before)
+
+ebay_1 <- do(10000)*diffmean(ratio ~ adwords_pause, data = resample(ebay))
+
+ggplot( ebay_1, aes(x= diffmean))+ geom_histogram() + labs(title = str_wrap("Bootstrap sampling distribution for difference in ratio between the treatment and control groups or the advertisement helped create extra revenue"))
+kable(confint(ebay_1, level = 0.95))
+
+```
+
+Question: Our question is whether the revenue ratio is the same in the treatment and control groups, or whether instead the data favors the idea that paid search advertising on Google creates extra revenue for EBay.
+
+Approach: We bootstrap the difference in ratio between the control groups and the treatment groups. 
+
+Results: The 95% confidence interval for difference between the treatment group and the control group ranges from -0.09 to -0.01. Our interval does not contain zero.
+
+Conclusion: This evidence helps support our claim that advertisement does help create extra revenue. 
+
